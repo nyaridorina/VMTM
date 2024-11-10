@@ -1,22 +1,29 @@
 import os
 import json
+import base64
 import subprocess
 from google.cloud import speech
 from google.oauth2 import service_account
 
-# Access the JSON credentials directly from the environment variable
-credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-if not credentials_json:
+# Access the Base64-encoded JSON credentials from the environment variable
+credentials_base64 = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64")
+if not credentials_base64:
     raise ValueError(
-        "Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON "
-        "environment variable to the JSON content of the credentials."
+        "Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 "
+        "environment variable to the Base64-encoded JSON content of the credentials."
     )
+
+# Decode the Base64 string to get the JSON string
+try:
+    credentials_json = base64.b64decode(credentials_base64).decode('utf-8')
+except Exception as e:
+    raise ValueError(f"Error decoding Base64 credentials: {e}")
 
 # Parse the JSON credentials
 try:
     credentials_info = json.loads(credentials_json)
 except json.JSONDecodeError as e:
-    raise ValueError(f"Invalid JSON in the credentials environment variable: {e}")
+    raise ValueError(f"Invalid JSON in the credentials: {e}")
 
 # Create the Credentials object
 credentials = service_account.Credentials.from_service_account_info(credentials_info)

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Szitokszó Felismerés</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        #status {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Szitokszó Felismerés</h1>
+    <button id="startBtn" onclick="startDetection()">Start</button>
+    <button id="stopBtn" onclick="stopDetection()" disabled>Stop</button>
+    <p id="status">Állapot: Várakozás</p>
+
+    <script>
+        let detectionActive = false;
+
+        async function startDetection() {
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("stopBtn").disabled = false;
+            document.getElementById("status").innerText = "Állapot: Figyelés...";
+            
+            detectionActive = true;
+            await fetch('/start-detection');  // Call backend to start detection
+        }
+
+        async function stopDetection() {
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("stopBtn").disabled = true;
+            document.getElementById("status").innerText = "Állapot: Leállítva";
+            
+            detectionActive = false;
+            await fetch('/stop-detection');  // Call backend to stop detection
+        }
+
+        // Function to handle alert message when a swear word is detected
+        function showAlert() {
+            alert("Figyelem! Szitokszó észlelve!");
+        }
+
+        // Polling function to get detection status from the server
+        async function checkDetection() {
+            if (detectionActive) {
+                const response = await fetch('/check-status');
+                const data = await response.json();
+                
+                if (data.alert) {
+                    showAlert();
+                }
+            }
+        }
+
+        // Poll every second for detection status
+        setInterval(checkDetection, 1000);
+    </script>
+</body>
+</html>

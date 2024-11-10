@@ -1,14 +1,19 @@
 import os
+import json
 from google.cloud import speech
-import tempfile
+from google.oauth2 import service_account
 
-# Access API key from environment variable
-API_KEY = os.getenv("GOOGLE_API_KEY")
-if not API_KEY:
-    raise ValueError("Google API key not found. Please set the GOOGLE_API_KEY environment variable.")
+# Access the JSON credentials from the environment variable
+credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+if not credentials_json:
+    raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable.")
 
-# Configure Google Speech Client with API Key
-client = speech.SpeechClient()
+# Load the credentials from the JSON string
+credentials_info = json.loads(credentials_json)
+credentials = service_account.Credentials.from_service_account_info(credentials_info)
+
+# Create the SpeechClient using the credentials
+client = speech.SpeechClient(credentials=credentials)
 
 # Define list of Hungarian swear words
 swear_words_hungarian = ["szar", "hülye", "kurva"]
@@ -47,5 +52,5 @@ def check_for_swear_words(text):
     return any(word in swear_words_hungarian for word in words)
 
 def alert_sound():
-    """Function to play an alert sound using text-to-speech."""
+    """Function to handle alert when a swear word is detected."""
     print("Figyelem! Nem megfelelő nyelvezet!")

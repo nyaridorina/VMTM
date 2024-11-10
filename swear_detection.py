@@ -9,7 +9,7 @@ import threading
 import time
 
 # Set API key environment variable
-os.environ["GOOGLE_API_KEY"] = "AIzaSyBjiTtcXccR5Kswy3d-JolYLYq_mboyBzQ"
+os.environ["GOOGLE_API_KEY"] = 
 
 # Use the client from Google Cloud with API Key
 client = speech.SpeechClient()

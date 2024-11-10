@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
+import os
 import tempfile
 from swear_detection import detect_swear_words_in_audio
 
@@ -6,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Welcome to the Swear Word Detection API!"
+    return render_template('index.html')
 
 @app.route('/upload-audio', methods=['POST'])
 def upload_audio():
@@ -24,11 +25,15 @@ def upload_audio():
     
     try:
         # Detect swear words in the provided audio file
-        detect_swear_words_in_audio(temp_audio_path)
+        swear_word_detected = detect_swear_words_in_audio(temp_audio_path)
+        if swear_word_detected:
+            message = 'Szitokszó észlelve az audióban!'
+        else:
+            message = 'Nincs szitokszó az audióban.'
     finally:
         os.unlink(temp_audio_path)
     
-    return jsonify({'message': 'Audio file processed successfully'}), 200
+    return jsonify({'message': message}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

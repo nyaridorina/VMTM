@@ -61,6 +61,9 @@ def detect_swear_words_in_audio(file_path):
     transcribed_text = transcribe_audio(file_path)
     if check_for_swear_words(transcribed_text):
         alert_sound()
+        return True
+    else:
+        return False
 
 def check_for_swear_words(text):
     """Checks if the recognized text contains any swear words."""

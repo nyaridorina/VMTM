@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Szitokszó Felismerés</title>
+    <title>Beszéderkölcsi vétség jelző</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -31,7 +31,7 @@
     </style>
 </head>
 <body>
-    <h1>Szitokszó Felismerés</h1>
+    <h1>Beszéderkölcsi vétség jelző</h1>
     <button id="startBtn" onclick="startDetection()">Start</button>
     <button id="stopBtn" onclick="stopDetection()" disabled>Stop</button>
     <p id="status">Állapot: Várakozás</p>
@@ -59,7 +59,7 @@
 
         // Function to handle alert message when a swear word is detected
         function showAlert() {
-            alert("Figyelem! Szitokszó észlelve!");
+            alert("Egy egység pénzbüntetésre ítélem beszéderkölcsi szabálysértés miatt");
         }
 
         // Polling function to get detection status from the server

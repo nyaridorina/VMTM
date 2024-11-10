@@ -1,19 +1,23 @@
 import sounddevice as sd
 import numpy as np
-import queue
 import tempfile
 import soundfile as sf
 import pyttsx3
+import queue
+import threading
+import time
 
 # Initialize text-to-speech for alert
 engine = pyttsx3.init()
-engine.setProperty('rate', 150)  # Adjust speaking rate if needed
+engine.setProperty('rate', 150)
 
 # Define list of Hungarian swear words
-swear_words_hungarian = ["szar", "kurva", "hülye"]
+swear_words_hungarian = ["szitokszó1", "szitokszó2", "szitokszó3"]
 
 # Queue to store audio data
 audio_queue = queue.Queue()
+swear_detected = False
+detection_active = False
 
 def alert_sound():
     """Function to play an alert sound using text-to-speech."""
@@ -29,28 +33,43 @@ def audio_callback(indata, frames, time, status):
     """Callback function to process each audio chunk."""
     if status:
         print(status)
-    # Put the audio data in the queue
     audio_queue.put(indata.copy())
 
 def start_detection():
-    """Function to start real-time audio detection."""
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as temp_wav_file:
-        # Open an input audio stream
-        with sd.InputStream(samplerate=16000, channels=1, callback=audio_callback):
-            print("Listening for swear words...")
-            while True:
-                # Get audio data from the queue
-                audio_data = audio_queue.get()
+    """Starts the audio detection process in a new thread."""
+    global detection_active, swear_detected
+    detection_active = True
+    swear_detected = False
 
-                # Write the audio data to a temporary WAV file
-                sf.write(temp_wav_file.name, audio_data, 16000, format='WAV')
+    def detection_task():
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=True) as temp_wav_file:
+            with sd.InputStream(samplerate=16000, channels=1, callback=audio_callback):
+                print("Listening for swear words...")
+                while detection_active:
+                    audio_data = audio_queue.get()
+                    sf.write(temp_wav_file.name, audio_data, 16000, format='WAV')
+                    
+                    # Replace with an actual transcription API call here
+                    fake_transcribed_text = "szitokszó1"  # Placeholder for testing
+                    
+                    if check_for_swear_words(fake_transcribed_text):
+                        swear_detected = True
+                        alert_sound()
+                        break  # Stop detection after detecting a swear word
+                    time.sleep(0.5)
 
-                # Here you could send `temp_wav_file.name` to a speech-to-text API
-                # For example, use Google Speech-to-Text or another provider to transcribe audio
-                # Example transcription response (replace this with actual API call result)
-                fake_transcribed_text = "szitokszó1 például"  # Replace with actual API response
+    detection_thread = threading.Thread(target=detection_task)
+    detection_thread.start()
 
-                # Check for swear words in the transcribed text
-                if check_for_swear_words(fake_transcribed_text):
-                    alert_sound()  # Play alert if a swear word is detected
-                    break
+def stop_detection():
+    """Stops the detection process."""
+    global detection_active
+    detection_active = False
+
+def is_swear_detected():
+    """Checks if a swear word was detected and resets status."""
+    global swear_detected
+    if swear_detected:
+        swear_detected = False
+        return True
+    return False

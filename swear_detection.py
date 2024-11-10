@@ -3,22 +3,18 @@ import json
 from google.cloud import speech
 from google.oauth2 import service_account
 
-# Access the JSON credentials from the environment variable
-credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
-if not credentials_path:
-    raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable to the path of the credentials file.")
+# Access the JSON credentials directly from the environment variable
+credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+if not credentials_json:
+    raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable to the JSON content of the credentials.")
 
-# Check if the provided path is a valid file
-if not os.path.isfile(credentials_path):
-    raise ValueError(f"The provided GOOGLE_APPLICATION_CREDENTIALS_JSON path '{credentials_path}' is not a valid file.")
+# Parse the JSON credentials
+try:
+    credentials_info = json.loads(credentials_json)
+except json.JSONDecodeError as e:
+    raise ValueError(f"Invalid JSON in the credentials environment variable: {e}")
 
-# Load the credentials from the JSON file
-with open(credentials_path, 'r') as file:
-    try:
-        credentials_info = json.load(file)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in the credentials file: {e}")
-
+# Create the Credentials object
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Create the SpeechClient using the credentials

@@ -1,7 +1,7 @@
 # Use an official Python runtime as a base image
 FROM python:3.11-slim
 
-# Install system dependencies for sounddevice (PortAudio)
+# Install PortAudio and other system dependencies
 RUN apt-get update && \
     apt-get install -y portaudio19-dev && \
     rm -rf /var/lib/apt/lists/*

@@ -16,11 +16,11 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Set environment variables for Flask
-ENV FLASK_APP=app_main_script.py
+ENV FLASK_APP=app.py
 ENV FLASK_ENV=production
 
 # Expose the port that the app runs on
 EXPOSE 5000
 
 # Run the app with Gunicorn
-CMD ["gunicorn", "app_main_script:app", "--bind", "0.0.0.0:5000"]
+CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000"]

@@ -7,8 +7,9 @@ import threading
 import time
 import tempfile
 
+
 # Access API key from environment variable
-API_KEY = os.environ.get("GOOGLE_API_KEY")
+API_KEY = os.getenv("GOOGLE_API_KEY")
 if not API_KEY:
     raise ValueError("Google API key not found. Please set the GOOGLE_API_KEY environment variable.")
 

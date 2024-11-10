@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hu">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Swear Word Detection App</title>
+    <title>Beszéderkölcsi Vétség Jelző</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,12 +36,12 @@
     </style>
 </head>
 <body>
-    <h1>Swear Word Detection App</h1>
+    <h1>Beszéderkölcsi Vétség Jelző</h1>
     <form id="audioForm" enctype="multipart/form-data">
         <input type="file" id="audioFile" name="audio" accept="audio/wav" required>
-        <button type="submit">Upload and Detect</button>
+        <button type="submit">Feltöltés és Ellenőrzés</button>
     </form>
-    <p id="status">Status: Waiting for input...</p>
+    <p id="status">Állapot: Várakozás...</p>
 
     <script>
         const form = document.getElementById('audioForm');
@@ -50,7 +50,7 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(form);
-            status.textContent = 'Status: Processing...';
+            status.textContent = 'Állapot: Feldolgozás folyamatban...';
 
             try {
                 const response = await fetch('/upload-audio', {
@@ -60,12 +60,12 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    status.textContent = 'Status: ' + result.message;
+                    status.textContent = 'Állapot: ' + result.message;
                 } else {
-                    status.textContent = 'Status: Error - ' + (result.error || 'Unknown error');
+                    status.textContent = 'Állapot: Hiba - ' + (result.error || 'Ismeretlen hiba');
                 }
             } catch (error) {
-                status.textContent = 'Status: Error - ' + error.message;
+                status.textContent = 'Állapot: Hiba - ' + error.message;
             }
         });
     </script>

@@ -1,12 +1,10 @@
 import os
 from google.cloud import speech
-from google.oauth2 import service_account
 import soundfile as sf
 import queue
 import threading
 import time
 import tempfile
-
 
 # Access API key from environment variable
 API_KEY = os.getenv("GOOGLE_API_KEY")

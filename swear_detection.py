@@ -6,10 +6,10 @@ from google.cloud import speech
 from google.oauth2 import service_account
 
 # Access the Base64-encoded JSON credentials from the environment variable
-credentials_base64 = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64")
+credentials_base64 = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if not credentials_base64:
     raise ValueError(
-        "Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON_BASE64 "
+        "Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON "
         "environment variable to the Base64-encoded JSON content of the credentials."
     )
 

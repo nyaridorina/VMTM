@@ -8,8 +8,19 @@ credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if not credentials_json:
     raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable.")
 
-# Load the credentials from the JSON string
-credentials_info = json.loads(credentials_json)
+# Fix for potential improper JSON formatting (remove extra data)
+credentials_json = credentials_json.strip()
+
+# Check if the JSON is a valid dictionary string or a file path
+try:
+    if os.path.isfile(credentials_json):
+        with open(credentials_json, 'r') as file:
+            credentials_info = json.load(file)
+    else:
+        credentials_info = json.loads(credentials_json)
+except json.JSONDecodeError as e:
+    raise ValueError(f"Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Create the SpeechClient using the credentials
@@ -32,9 +43,16 @@ def transcribe_audio(file_path):
     )
 
     # Call the Speech-to-Text API
-    response = client.recognize(config=config, audio=audio)
+    try:
+        response = client.recognize(config=config, audio=audio)
+    except Exception as e:
+        print(f"Error during speech recognition: {e}")
+        return ""
 
     # Collect transcription results
+    if not response.results:
+        return ""
+
     for result in response.results:
         return result.alternatives[0].transcript
 

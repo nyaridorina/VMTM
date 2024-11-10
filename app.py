@@ -8,8 +8,15 @@ credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if not credentials_json:
     raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable.")
 
+# Fix for potential improper JSON formatting (remove extra data)
+credentials_json = credentials_json.strip()
+
 # Load the credentials from the JSON string
-credentials_info = json.loads(credentials_json)
+try:
+    credentials_info = json.loads(credentials_json)
+except json.JSONDecodeError as e:
+    raise ValueError(f"Invalid JSON in GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+
 credentials = service_account.Credentials.from_service_account_info(credentials_info)
 
 # Create the SpeechClient using the credentials

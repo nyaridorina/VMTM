@@ -1,9 +1,9 @@
 # Use an official Python runtime as a base image
 FROM python:3.11-slim
 
-# Install PortAudio and other system dependencies
+# Install system dependencies, including PortAudio and ffmpeg
 RUN apt-get update && \
-    apt-get install -y portaudio19-dev ffmpeg && \
+    apt-get install -y portaudio19-dev ffmpeg libasound2-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up the working directory

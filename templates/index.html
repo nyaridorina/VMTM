@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="hu">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beszéderkölcsi vétség jelző</title>
+    <title>Swear Word Detection App</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,11 +18,16 @@
         h1 {
             color: #333;
         }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
         button {
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            margin: 10px;
         }
         #status {
             font-weight: bold;
@@ -31,53 +36,38 @@
     </style>
 </head>
 <body>
-    <h1>Beszéderkölcsi vétség jelző</h1>
-    <button id="startBtn" onclick="startDetection()">Start</button>
-    <button id="stopBtn" onclick="stopDetection()" disabled>Stop</button>
-    <p id="status">Állapot: Várakozás</p>
+    <h1>Swear Word Detection App</h1>
+    <form id="audioForm" enctype="multipart/form-data">
+        <input type="file" id="audioFile" name="audio" accept="audio/wav" required>
+        <button type="submit">Upload and Detect</button>
+    </form>
+    <p id="status">Status: Waiting for input...</p>
 
     <script>
-        let detectionActive = false;
+        const form = document.getElementById('audioForm');
+        const status = document.getElementById('status');
 
-        async function startDetection() {
-            document.getElementById("startBtn").disabled = true;
-            document.getElementById("stopBtn").disabled = false;
-            document.getElementById("status").innerText = "Állapot: Figyelés...";
-            
-            detectionActive = true;
-            await fetch('/start-detection');  // Call backend to start detection
-        }
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            status.textContent = 'Status: Processing...';
 
-        async function stopDetection() {
-            document.getElementById("startBtn").disabled = false;
-            document.getElementById("stopBtn").disabled = true;
-            document.getElementById("status").innerText = "Állapot: Leállítva";
-            
-            detectionActive = false;
-            await fetch('/stop-detection');  // Call backend to stop detection
-        }
+            try {
+                const response = await fetch('/upload-audio', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
 
-        // Function to handle alert message when a swear word is detected
-        function showAlert() {
-            alert("Egy egység pénzbüntetésre ítélem beszéderkölcsi szabálysértés miatt");
-        }
-
-        // Polling function to get detection status from the server
-        async function checkDetection() {
-            if (detectionActive) {
-                const response = await fetch('/check-status');
-                const data = await response.json();
-                
-                if (data.alert) {
-                    showAlert();
-                    document.getElementById("status").innerText = "Állapot: Szabálysértés észlelve!";
-                    stopDetection();
+                if (response.ok) {
+                    status.textContent = 'Status: ' + result.message;
+                } else {
+                    status.textContent = 'Status: Error - ' + (result.error || 'Unknown error');
                 }
+            } catch (error) {
+                status.textContent = 'Status: Error - ' + error.message;
             }
-        }
-
-        // Poll every second for detection status
-        setInterval(checkDetection, 1000);
+        });
     </script>
 </body>
 </html>

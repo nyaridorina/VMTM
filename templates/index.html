@@ -70,6 +70,8 @@
                 
                 if (data.alert) {
                     showAlert();
+                    document.getElementById("status").innerText = "Állapot: Szabálysértés észlelve!";
+                    stopDetection();
                 }
             }
         }

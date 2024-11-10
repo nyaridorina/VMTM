@@ -1,12 +1,16 @@
 import os
 import json
+import subprocess
 from google.cloud import speech
 from google.oauth2 import service_account
 
 # Access the JSON credentials directly from the environment variable
 credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
 if not credentials_json:
-    raise ValueError("Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable to the JSON content of the credentials.")
+    raise ValueError(
+        "Google service account credentials not found. Please set the GOOGLE_APPLICATION_CREDENTIALS_JSON "
+        "environment variable to the JSON content of the credentials."
+    )
 
 # Parse the JSON credentials
 try:
@@ -22,6 +26,17 @@ client = speech.SpeechClient(credentials=credentials)
 
 # Define list of Hungarian swear words
 swear_words_hungarian = ["szar", "hülye", "kurva"]
+
+def convert_audio(input_path, output_path):
+    """Converts audio file to the required format for speech recognition."""
+    command = [
+        'ffmpeg', '-y', '-i', input_path,
+        '-ar', '16000',    # Sample rate
+        '-ac', '1',        # Mono channel
+        '-f', 'wav',
+        output_path
+    ]
+    subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 def transcribe_audio(file_path):
     """Transcribes the given audio file."""

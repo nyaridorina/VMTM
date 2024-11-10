@@ -27,4 +27,6 @@ def check_status():
     return jsonify(alert=alert)
 
 if __name__ == '__main__':
+    # Run the app on all available IP addresses (0.0.0.0) and port 5000
+    # In a development setting, it's better to run on '127.0.0.1' for security
     app.run(host='0.0.0.0', port=5000)

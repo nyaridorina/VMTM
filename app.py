@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from swear_detection_script import detect_swear_words_in_audio
+from swear_detection import detect_swear_words_in_audio
 import os
 import tempfile
 

@@ -12,7 +12,7 @@ engine = pyttsx3.init()
 engine.setProperty('rate', 150)
 
 # Define list of Hungarian swear words
-swear_words_hungarian = ["szitokszó1", "szitokszó2", "szitokszó3"]
+swear_words_hungarian = ["szar", "hülye", "kurva"]
 
 # Queue to store audio data
 audio_queue = queue.Queue()

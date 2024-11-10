@@ -3,7 +3,8 @@ FROM python:3.11-slim
 
 # Install PortAudio and other system dependencies
 RUN apt-get update && \
-    apt-get install -y portaudio19-dev ffmpeg libasound2-dev libportaudio2 libportaudiocpp0 && \
+    apt-get install -y portaudio19-dev ffmpeg libasound2-dev libportaudio2 libportaudiocpp0 alsa-utils && \
+    apt-get install -y pulseaudio && \
     rm -rf /var/lib/apt/lists/*
 
 # Set up the working directory

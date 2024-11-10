@@ -1,32 +1,32 @@
-from flask import Flask, jsonify, render_template
-from swear_detection import start_detection, stop_detection, is_swear_detected
+from flask import Flask, request, jsonify
+from swear_detection_script import detect_swear_words_in_audio
+import os
+import tempfile
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    """Renders the main frontend page."""
-    return render_template('index.html')
+    return "Welcome to the Swear Word Detection API!"
 
-@app.route('/start-detection', methods=['GET'])
-def start_detection_route():
-    """Starts the detection process."""
-    start_detection()  # Begin detection process
-    return jsonify(success=True)
-
-@app.route('/stop-detection', methods=['GET'])
-def stop_detection_route():
-    """Stops the detection process."""
-    stop_detection()  # Stop the detection process
-    return jsonify(success=True)
-
-@app.route('/check-status', methods=['GET'])
-def check_status():
-    """Checks if a swear word was detected."""
-    alert = is_swear_detected()
-    return jsonify(alert=alert)
+@app.route('/upload-audio', methods=['POST'])
+def upload_audio():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+    
+    audio_file = request.files['audio']
+    if audio_file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    # Save the uploaded audio to a temporary file
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
+        audio_file.save(temp_audio.name)
+        temp_audio_path = temp_audio.name
+    
+    # Detect swear words in the provided audio file
+    detect_swear_words_in_audio(temp_audio_path)
+    
+    return jsonify({'message': 'Audio file processed successfully'}), 200
 
 if __name__ == '__main__':
-    # Run the app on all available IP addresses (0.0.0.0) and port 5000
-    # In a development setting, it's better to run on '127.0.0.1' for security
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

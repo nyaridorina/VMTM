@@ -1,56 +1,55 @@
 import speech_recognition as sr
+import sounddevice as sd
+import numpy as np
 import pygame
 from gtts import gTTS
 import os
 
 # Initialize alert sound and TTS message
 pygame.init()
-alert_sound = "alert.wav"  # Ensure you have an alert sound file
+alert_sound = "audio/alert.wav"  # Ensure you have an alert sound file in 'audio/'
 
 # Generate TTS message
 warning_message = "Ön beszéderkölcsi szabálysértést követett el."
 tts = gTTS(warning_message, lang='hu')
-tts.save("warning.mp3")
+tts.save("audio/warning.mp3")
 
-# List of Hungarian swear words
-swear_words = ['hülye', 'kurva', 'szar']
+# Load swear words from file
+with open("config/swear_words.txt", "r", encoding="utf-8") as f:
+    swear_words = [line.strip().lower() for line in f]
 
 def play_alert():
     pygame.mixer.music.load(alert_sound)
     pygame.mixer.music.play()
 
 def play_warning():
-    os.system("mpg123 warning.mp3")  # Use mpg123 for playing mp3 files
+    os.system("mpg123 audio/warning.mp3")  # Use mpg123 for playing mp3 files
 
-# Speech recognition setup
-recognizer = sr.Recognizer()
-microphone = sr.Microphone()
+def recognize_speech():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+    try:
+        text = recognizer.recognize_google(audio, language="hu-HU")
+        print(f"Recognized: {text}")
+        return text.lower()
+    except sr.UnknownValueError:
+        print("Could not understand audio.")
+        return ""
+    except sr.RequestError as e:
+        print(f"Speech Recognition error: {e}")
+        return ""
 
-print("App is running. Say something...")
-
-try:
+def main():
+    print("App is running. Say something...")
     while True:
-        with microphone as source:
-            # Adjust for ambient noise and record
-            recognizer.adjust_for_ambient_noise(source)
-            print("Listening...")
-            audio = recognizer.listen(source)
+        text = recognize_speech()
+        if any(swear in text for swear in swear_words):
+            print("Swear word detected!")
+            play_alert()
+            play_warning()
 
-        # Recognize speech
-        try:
-            text = recognizer.recognize_google(audio, language="hu-HU")
-            print(f"Recognized: {text}")
-
-            # Check for swear words
-            if any(swear in text.lower() for swear in swear_words):
-                print("Swear word detected!")
-                play_alert()
-                play_warning()
-
-        except sr.UnknownValueError:
-            print("Could not understand audio.")
-        except sr.RequestError as e:
-            print(f"Speech Recognition error: {e}")
-
-except KeyboardInterrupt:
-    print("Program stopped.")
+if __name__ == "__main__":
+    main()

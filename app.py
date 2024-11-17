@@ -1,48 +1,56 @@
-from flask import Flask, request, jsonify, render_template
+import speech_recognition as sr
+import pygame
+from gtts import gTTS
 import os
-import tempfile
-from swear_detection import detect_swear_words_in_audio, convert_audio
 
-app = Flask(__name__)
+# Initialize alert sound and TTS message
+pygame.init()
+alert_sound = "alert.wav"  # Ensure you have an alert sound file
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Generate TTS message
+warning_message = "Ön beszéderkölcsi szabálysértést követett el."
+tts = gTTS(warning_message, lang='hu')
+tts.save("warning.mp3")
 
-@app.route('/upload-audio', methods=['POST'])
-def upload_audio():
-    if 'audio' not in request.files:
-        return jsonify({'error': 'No audio file provided'}), 400
-    
-    audio_file = request.files['audio']
-    if audio_file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    # Save the uploaded audio to a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_audio:
-        audio_file.save(temp_audio.name)
-        temp_audio_path = temp_audio.name
+# List of Hungarian swear words
+swear_words = ['hülye', 'kurva', 'szar']
 
-    try:
-        # Convert the audio to the required format
-        temp_converted_audio_path = temp_audio_path + '_converted.wav'
-        convert_audio(temp_audio_path, temp_converted_audio_path)
+def play_alert():
+    pygame.mixer.music.load(alert_sound)
+    pygame.mixer.music.play()
 
-        # Detect swear words in the converted audio file
-        swear_word_detected = detect_swear_words_in_audio(temp_converted_audio_path)
+def play_warning():
+    os.system("mpg123 warning.mp3")  # Use mpg123 for playing mp3 files
 
-        # Remove the converted audio file after processing
-        os.unlink(temp_converted_audio_path)
+# Speech recognition setup
+recognizer = sr.Recognizer()
+microphone = sr.Microphone()
 
-        if swear_word_detected:
-            message = 'Szitokszó észlelve az audióban!'
-        else:
-            message = 'Nincs szitokszó az audióban.'
-    finally:
-        os.unlink(temp_audio_path)
-    
-    return jsonify({'message': message}), 200
+print("App is running. Say something...")
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+try:
+    while True:
+        with microphone as source:
+            # Adjust for ambient noise and record
+            recognizer.adjust_for_ambient_noise(source)
+            print("Listening...")
+            audio = recognizer.listen(source)
+
+        # Recognize speech
+        try:
+            text = recognizer.recognize_google(audio, language="hu-HU")
+            print(f"Recognized: {text}")
+
+            # Check for swear words
+            if any(swear in text.lower() for swear in swear_words):
+                print("Swear word detected!")
+                play_alert()
+                play_warning()
+
+        except sr.UnknownValueError:
+            print("Could not understand audio.")
+        except sr.RequestError as e:
+            print(f"Speech Recognition error: {e}")
+
+except KeyboardInterrupt:
+    print("Program stopped.")

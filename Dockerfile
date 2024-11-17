@@ -1,26 +1,18 @@
-# Use an official Python runtime as a base image
-FROM python:3.11-slim
+# Base Python image
+FROM python:3.11
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y ffmpeg libasound2-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set up the working directory
+# Set working directory
 WORKDIR /app
 
-# Copy project files to the container
-COPY . /app
+# Install system dependencies
+RUN apt-get update && apt-get install -y portaudio19-dev
 
-# Install Python dependencies from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy project files
+COPY . .
 
-# Set environment variables for Flask
-ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
+# Install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
-# Expose the port that the app runs on
-EXPOSE 5000
-
-# Run the app with Gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--workers=3", "--threads=2"]
+# Run the application
+CMD ["python", "app.py"]
